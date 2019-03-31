@@ -79,4 +79,61 @@ def dft(signal):
     return spectrum
 
 
-def estimar_fundamental()
+def estimar_fundamental(spectrum, fs, N):
+     
+    f = 0 
+
+    n = []
+
+    L =  len(spectrum)
+    
+    m = max(spectrum)
+    
+    for i in range(L):
+        if(spectrum[i] == m):
+            n.append(i)
+
+    for i in range(len(n)):
+        f += n[i]
+
+    f = (f / len(n)) * fs/N
+
+    return f
+
+
+N  = 1024     # muestras
+fs = 1024     # Hz
+
+a0 = 1      # Volts
+p0 = 0      # radianes
+
+fd = np.array([[0.00], [0.01], [0.25], [0.5]])
+
+f0 = fs/4 + fd      # Hz
+
+zeros = [0, N//10, N, 10*N]
+
+Lz = len(zeros)
+
+Lfd = len(fd)
+
+percentage = [[0 for x in range(Lfd)] for y in range(Lz)]
+
+for i in range(Lfd): 
+    
+    for j in range(Lz):
+
+        tt, signal = generador_senoidal(fs, f0[i], N, a0, p0)
+
+        padSignal = np.pad(signal, (zeros[i], zeros[i]), 'constant')
+
+        NN = zeros[i]*2 + N
+
+        spectrum = (2/NN)*np.abs(sc.fft(padSignal))    
+
+        halfSpectrum = spectrum[:NN//2]  
+
+        f = estimar_fundamental(halfSpectrum, fs, NN)      
+  
+        percentage[i][j] = abs(N//4-f)*100/(N//4)
+
