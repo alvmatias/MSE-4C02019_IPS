@@ -100,7 +100,6 @@ def estimar_fundamental(spectrum, fs, N):
 
     return f
 
-
 N  = 1024     # muestras
 fs = 1024     # Hz
 
@@ -112,25 +111,27 @@ f0 = fs/4 + fd      # Hz
 
 L = len(fd)
 
-tt, signal = generador_senoidal(fs, f0, N, a0, p0)
-
-padSignal = np.pad(signal, (N//10, 10*N), 'constant')
-
 NN = N//10 + N + 10*N
-
-spectrum = (2/NN)*np.abs(sc.fft(padSignal))     #arreglo bidimensional
-
-halfSpectrum = spectrum[:,:NN//2]            #arreglo bidimensional
 
 f = np.linspace(0, fs/2, NN/2).flatten()
 
 for i in range(L):
+    tt, signal = generador_senoidal(fs, f0[i], N, a0, p0)
+
+    padSignal = np.pad(signal, (N//10, 10*N), 'constant')
+
+    spectrum = (2/NN)*np.abs(sc.fft(padSignal))     #arreglo bidimensional
+
+    halfSpectrum = spectrum[:NN//2]            #arreglo bidimensional
+
     plt.figure(i+1)
 
-    plt.stem(f, halfSpectrum[i])
+    plt.stem(f, halfSpectrum)
 
     plt.title('FFT: $F_s/4$ + ' + str(fd[i]))
     plt.xlabel('Frecuencia [Hz]')
     plt.ylabel('Amplitud[V]')
 
     plt.show()
+
+
