@@ -104,36 +104,33 @@ def estimar_fundamental(spectrum, fs, N):
 N  = 1024     # muestras
 fs = 1024     # Hz
 
-a0 = 1      # Volts
-p0 = 0      # radianes
-
 fd = np.array([[0.00], [0.01], [0.25], [0.5]])
 
+a0 = 1      # Volts
+p0 = 0      # radianes
 f0 = fs/4 + fd      # Hz
 
-zeros = [0, N//10, N, 10*N]
+L = len(fd)
 
-Lz = len(zeros)
+tt, signal = generador_senoidal(fs, f0, N, a0, p0)
 
-Lfd = len(fd)
+padSignal = np.pad(signal, (N//10, 10*N), 'constant')
 
-percentage = [[0 for x in range(Lfd)] for y in range(Lz)]
+NN = N//10 + N + 10*N
 
-for i in range(Lfd): 
-    
-    for j in range(Lz):
+spectrum = (2/NN)*np.abs(sc.fft(padSignal))     #arreglo bidimensional
 
-        tt, signal = generador_senoidal(fs, f0[i], N, a0, p0)
+halfSpectrum = spectrum[:,:NN//2]            #arreglo bidimensional
 
-        padSignal = np.pad(signal, (zeros[i], zeros[i]), 'constant')
+f = np.linspace(0, fs/2, NN/2).flatten()
 
-        NN = zeros[i]*2 + N
+for i in range(L):
+    plt.figure(i+1)
 
-        spectrum = (2/NN)*np.abs(sc.fft(padSignal))    
+    plt.stem(f, halfSpectrum[i])
 
-        halfSpectrum = spectrum[:NN//2]  
+    plt.title('FFT: $F_s/4$ + ' + str(fd[i]))
+    plt.xlabel('Frecuencia [Hz]')
+    plt.ylabel('Amplitud[V]')
 
-        f = estimar_fundamental(halfSpectrum, fs, NN)      
-  
-        percentage[i][j] = abs(N//4-f)*100/(N//4)
-
+    plt.show()
