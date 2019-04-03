@@ -100,38 +100,50 @@ def estimar_fundamental(spectrum, fs, N):
 
     return f
 
-N  = 1024     # muestras
-fs = 1024     # Hz
 
-fd = np.array([[0.00], [0.01], [0.25], [0.5]])
+N  = [16, 32, 64, 128, 256, 512, 1024, 2048] # muestras
+fs = [16, 32, 64, 128, 256, 512, 1024, 2048] # Hz
 
-a0 = 1      # Volts
-p0 = 0      # radianes
-f0 = fs/4 + fd      # Hz
+a0 = 1     # Volts
+p0 = 0     # radianes
+f0 = 5     # Hz
 
-L = len(fd)
+L = len(N)
 
-NN = N//10 + N + 10*N
+#Vectores de tiempo de cada dft
+fftTime = [0] * L
 
-f = np.linspace(0, fs/2, NN/2).flatten()
+dftTime = [0] * L
 
+#Por cada prueba
 for i in range(L):
-    tt, signal = generador_senoidal(fs, f0[i], N, a0, p0)
+    #Obtenemos la señal
+    tt, signal = generador_senoidal(fs[i], f0, N[i], a0, p0)
 
-    padSignal = np.pad(signal, (N//10, 10*N), 'constant')
+    #FFT
+    timeStart = time.perf_counter()
 
-    spectrum = (2/NN)*np.abs(sc.fft(padSignal))     #arreglo bidimensional
+    spectrumFFT = (2/N[i])*np.abs(sc.fft(signal))
 
-    halfSpectrum = spectrum[:NN//2]            #arreglo bidimensional
+    halfFFT = spectrumFFT[:N[i]//2] 
 
-    plt.figure(i+1)
+    fftTime[i] = time.perf_counter() - timeStart
+    
+    #DFT
+    timeStart = time.perf_counter()
 
-    plt.stem(f, halfSpectrum)
+    spectrumDFT = (2/N[i])*np.abs(dft(signal))
 
-    plt.title('FFT: $F_s/4$ + ' + str(fd[i]))
-    plt.xlabel('Frecuencia [Hz]')
-    plt.ylabel('Amplitud[V]')
+    halfDFT = spectrumDFT[:N[i]//2]
 
-    plt.show()
+    dftTime[i] = time.perf_counter() - timeStart
 
+#Grafico
+plt.plot(N, fftTime, '-*r', label='FFT')
+plt.plot(N, dftTime, '-*g', label='DFT')
 
+plt.title('' )
+plt.xlabel('Cantidad de muestras')
+plt.ylabel('Tiempo de ejecucion[S]')
+
+plt.show()
