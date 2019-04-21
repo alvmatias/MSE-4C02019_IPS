@@ -82,14 +82,6 @@ heartbeat_pattern1 = mat['heartbeat_pattern1']
 heartbeat_pattern2 = mat['heartbeat_pattern2']
 qrs_detections = mat['qrs_detections']
 
-mat = scipyio.loadmat('ECG_TP4.mat')
-
-ecg_lead = mat['ecg_lead']  
-qrs_pattern1 = mat['qrs_pattern1']
-heartbeat_pattern1 = mat['heartbeat_pattern1']
-heartbeat_pattern2 = mat['heartbeat_pattern2']
-qrs_detections = mat['qrs_detections']
-
 fs = 1000 #1KHz
 ts = 1/fs
 
@@ -1446,10 +1438,12 @@ plt.plot(tt, yPBFIR[ecg_In:ecg_Fin], label="PB_FIR")
 plt.plot(tt, yPAFIR[ecg_In:ecg_Fin], label="PA_FIR")
 #plt.plot(tt, yPBIIR[ecg_In:ecg_Fin], label="PB_IIR")
 #plt.plot(tt, yPAIIR[ecg_In:ecg_Fin], label="PA_IIR")
+
 plt.title('Registro ECG')
 plt.xlabel('Tiempo en Segundos')
 plt.ylabel('Amplitud')
 plt.grid(which='both', axis='both')
+
 axes_hdl = plt.gca()
 axes_hdl.legend()
 
@@ -1482,9 +1476,11 @@ plt.plot(ff, halfSpectrumYPBFIR, label="PB_FIR")
 plt.plot(ff, halfSpectrumYPAFIR, label="PA_FIR")
 #plt.plot(ff, halfSpectrumYPBIIR, label="PB_IIR")
 #plt.plot(ff, halfSpectrumYPAIIR, label="PA_IIR")
+
 plt.title('FFT: Registro ECG')
 plt.xlabel('Frecuencia [Hz]')
 plt.ylabel('Amplitud Normalizada')
 plt.grid(which='both', axis='both')
+
 axes_hdl = plt.gca()
 axes_hdl.legend()
