@@ -101,49 +101,59 @@ def estimar_fundamental(spectrum, fs, N):
     return f
 
 
-N  = [16, 32, 64, 128, 256, 512, 1024, 2048] # muestras
-fs = [16, 32, 64, 128, 256, 512, 1024, 2048] # Hz
+N  = 1024     # muestras
+fs = 1024     # Hz
 
-a0 = 1     # Volts
-p0 = 0     # radianes
-f0 = 5     # Hz
+a0 = 1      # Volts
+p0 = 0      # radianes
 
-L = len(N)
+#Arreglo de frecuencias de desintonia
+fd = np.array([[0.00], [0.01], [0.25], [0.5]])
 
-#Vectores de tiempo de cada dft
-fftTime = [0] * L
+#Arreglo de frecuencias fundamentales
+f0 = fs/4 + fd      # Hz
 
-dftTime = [0] * L
+#Vector de "paddings"
+zeros = [0, N//10, N, 10*N]
 
-#Por cada prueba
-for i in range(L):
-    #Obtenemos la señal
-    tt, signal = generador_senoidal(fs[i], f0, N[i], a0, p0)
+#Largo del vector de "paddings"
+Lz = len(zeros)
 
-    #FFT
-    timeStart = time.perf_counter()
+#Largo del vector de frecuencias de desintonia
+Lfd = len(fd)
 
-    spectrumFFT = (2/N[i])*np.abs(sc.fft(signal))
+#Matriz de porcentaje de error de estimacion de frecuencia fundamental
+percentage = [[0 for x in range(Lfd)] for y in range(Lz)]
 
-    halfFFT = spectrumFFT[:N[i]//2] 
+#Por cada frecuencia de desintonia
+for i in range(Lfd): 
+    #Por cada ejemplo de padding
+    for j in range(Lz):
+        #Calculamos señal
+        tt, signal = generador_senoidal(fs, f0[i], N, a0, p0)
+        #Realizamos ventaneo
+        padSignal = np.pad(signal, (zeros[j], zeros[j]), 'constant')
+        #Numero de muestras
+        NN = zeros[j]*2 + N
+        #Arreglo de frecuencias del espectro
+        ff = np.linspace(0, fs/2, NN/2).flatten()
+        #Calculamos espectro
+        spectrum = (2/NN)*np.abs(sc.fft(padSignal))    
+        #Nos quedamos con la primer mitad del espectro
+        halfSpectrum = spectrum[:NN//2]  
+        #Obtenemos el estimador de la fundamental
+        f = estimar_fundamental(halfSpectrum, fs, NN)      
+        #Calculamos el porcentaje de error
+        percentage[i][j] = abs(f0[i][0]-f)*100/(f0[i][0])
+        #Grafico
+        plt.figure(i+1)
 
-    fftTime[i] = time.perf_counter() - timeStart
-    
-    #DFT
-    timeStart = time.perf_counter()
+        plt.stem(ff, halfSpectrum)
 
-    spectrumDFT = (2/N[i])*np.abs(dft(signal))
+        plt.title('FFT: $F_s/4$ + ' + str(fd[i][0]) + ' Hz ' + 'Padding simetrico: ' + str(zeros[j]))
+        plt.xlabel('Frecuencia [Hz]')
+        plt.ylabel('Amplitud normalizada')
 
-    halfDFT = spectrumDFT[:N[i]//2]
+        plt.show()
 
-    dftTime[i] = time.perf_counter() - timeStart
 
-#Grafico
-plt.plot(N, fftTime, '-*r', label='FFT')
-plt.plot(N, dftTime, '-*g', label='DFT')
-
-plt.title('' )
-plt.xlabel('Cantidad de muestras')
-plt.ylabel('Tiempo de ejecucion[S]')
-
-plt.show()
