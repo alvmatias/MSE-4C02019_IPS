@@ -155,3 +155,5 @@ for i in range(Lfd):
         plt.ylabel('Amplitud normalizada')
 
         plt.show()
+
+
